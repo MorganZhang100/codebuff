@@ -1,14 +1,13 @@
 package org.antlr.codebuff;
 
 import org.antlr.codebuff.misc.HashBag;
-import org.antlr.codebuff.misc.MutableDouble;
 import org.antlr.v4.runtime.misc.Pair;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+
+import static org.antlr.codebuff.CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD2;
 
 /** A kNN (k-Nearest Neighbor) classifier */
 public abstract class kNNClassifier {
@@ -23,8 +22,8 @@ public abstract class kNNClassifier {
 		this.FEATURES = FEATURES;
 		assert FEATURES.length <= CollectFeatures.NUM_FEATURES;
 		int n = 0;
-		for (int i=0; i<FEATURES.length; i++) {
-			n += FEATURES[i].mismatchCost;
+		for (FeatureMetaData FEATURE : FEATURES) {
+			n += FEATURE.mismatchCost;
 		}
 		maxDistanceCount = n;
 	}
@@ -40,10 +39,7 @@ public abstract class kNNClassifier {
 		votesBag = getVotesBag(kNN, k, unknown, corpus.injectWS);
 		categories[Corpus.INDEX_FEATURE_WS] = getCategoryWithMostVotes(votesBag);
 
-		votesBag = getVotesBag(kNN, k, unknown, corpus.indent);
-		categories[Corpus.INDEX_FEATURE_INDENT] = getCategoryWithMostVotes(votesBag);
-
-		votesBag = getVotesBag(kNN, k, unknown, corpus.alignWithPrevious);
+		votesBag = getVotesBag(kNN, k, unknown, corpus.align);
 		categories[Corpus.INDEX_FEATURE_ALIGN_WITH_PREVIOUS] = getCategoryWithMostVotes(votesBag);
 
 		return categories;
@@ -56,6 +52,10 @@ public abstract class kNNClassifier {
 	 */
 	public int classify(int k, int[] unknown, List<Integer> Y, double distanceThreshold) {
 		HashBag<Integer> votes = votes(k, unknown, Y, distanceThreshold);
+		if ( votes.size()==0 ) {
+			// try with less strict match threshold to get some indication of alignment
+			votes = votes(k, unknown, Y, MAX_CONTEXT_DIFF_THRESHOLD2);
+		}
 		return getCategoryWithMostVotes(votes);
 	}
 
@@ -85,11 +85,10 @@ public abstract class kNNClassifier {
 		if ( dumpVotes && kNN.length>0 ) {
 			System.out.print(CollectFeatures.featureNameHeader(FEATURES));
 			InputDocument firstDoc = corpus.documents.get(kNN[0].corpusVectorIndex); // pick any neighbor to get parser
-			System.out.println(CollectFeatures._toString(FEATURES, firstDoc.parser.getVocabulary(), firstDoc.parser.getRuleNames(), unknown)+"->"+votes);
+			System.out.println(CollectFeatures._toString(FEATURES, firstDoc, unknown)+"->"+votes);
 			kNN = Arrays.copyOfRange(kNN, 0, Math.min(k, kNN.length));
 			StringBuilder buf = new StringBuilder();
-			for (int i = 0; i<kNN.length; i++) {
-				Neighbor n = kNN[i];
+			for (Neighbor n : kNN) {
 				buf.append(n.toString(FEATURES, Y));
 				buf.append("\n");
 			}
@@ -98,41 +97,27 @@ public abstract class kNNClassifier {
 		return votes;
 	}
 
-	public String getPredictionAnalysis(int k, int[] unknown, List<Integer> Y, double distanceThreshold) {
+	public String getPredictionAnalysis(InputDocument doc, int k, int[] unknown, List<Integer> Y, double distanceThreshold) {
 		Neighbor[] kNN = kNN(unknown, k, distanceThreshold);
 		HashBag<Integer> votes = getVotesBag(kNN, k, unknown, Y);
+		if ( votes.size()==0 ) {
+			// try with less strict match threshold to get some indication of alignment
+			kNN = kNN(unknown, k, MAX_CONTEXT_DIFF_THRESHOLD2);
+			votes = getVotesBag(kNN, k, unknown, Y);
+		}
 
 		StringBuilder buf = new StringBuilder();
-		InputDocument firstDoc = corpus.documents.get(0); // pick any doc to get parser
 		buf.append(CollectFeatures.featureNameHeader(FEATURES));
-		buf.append(CollectFeatures._toString(FEATURES, firstDoc.parser.getVocabulary(),
-		                                     firstDoc.parser.getRuleNames(), unknown)+"->"+votes);
+		buf.append(CollectFeatures._toString(FEATURES, doc, unknown)+"->"+votes);
 		buf.append("\n");
 		if ( kNN.length>0 ) {
 			kNN = Arrays.copyOfRange(kNN, 0, Math.min(k, kNN.length));
-			for (int i = 0; i<kNN.length; i++) {
-				Neighbor n = kNN[i];
+			for (Neighbor n : kNN) {
 				buf.append(n.toString(FEATURES, Y));
 				buf.append("\n");
 			}
 		}
 		return buf.toString();
-	}
-
-	/** Same as getVotesBag except sum the distances for each category rather than just count the instances */
-	// TODO: not using just yet. I think we need to specialize features per classification
-	public Map<Integer, MutableDouble> getCategoryDistanceMap(Neighbor[] kNN, int k, int[] unknown, List<Integer> Y) {
-		Map<Integer, MutableDouble> catToDist = new HashMap<>();
-		for (int i = 0; i<k && i<kNN.length; i++) {
-			Integer category = Y.get(kNN[i].corpusVectorIndex);
-			MutableDouble sum = catToDist.get(category);
-			if ( sum==null ) {
-				sum = new MutableDouble(0.0);
-				catToDist.put(category, sum);
-			}
-			sum.add(kNN[i].distance);
-		}
-		return catToDist;
 	}
 
 	public Neighbor[] kNN(int[] unknown, int k, double distanceThreshold) {
@@ -145,7 +130,9 @@ public abstract class kNNClassifier {
 	public Neighbor[] distances(int[] unknown, double distanceThreshold) {
 		int curTokenRuleIndex = unknown[CollectFeatures.INDEX_RULE];
 		int prevTokenRuleIndex = unknown[CollectFeatures.INDEX_PREV_RULE];
-		Pair<Integer, Integer> key = new Pair<>(curTokenRuleIndex, prevTokenRuleIndex);
+		int pr = CollectFeatures.unrulealt(prevTokenRuleIndex)[0];
+		int cr = CollectFeatures.unrulealt(curTokenRuleIndex)[0];
+		Pair<Integer, Integer> key =  new Pair<>(pr, cr);
 		List<Integer> vectorIndexesMatchingTokenContext = corpus.curAndPrevTokenRuleIndexToVectorsMap.get(key);
 		List<Neighbor> distances = new ArrayList<>();
 		if ( vectorIndexesMatchingTokenContext==null ) {
@@ -159,8 +146,7 @@ public abstract class kNNClassifier {
 		}
 		else {
 			int n = vectorIndexesMatchingTokenContext.size(); // num training samples
-			for (int i = 0; i<n; i++) {
-				Integer vectorIndex = vectorIndexesMatchingTokenContext.get(i);
+			for (Integer vectorIndex : vectorIndexesMatchingTokenContext) {
 				int[] x = corpus.X.get(vectorIndex);
 				double d = distance(x, unknown);
 				if ( d<=distanceThreshold ) {

@@ -34,7 +34,7 @@
 		<dependency>
 			<groupId>org.antlr</groupId>
 			<artifactId>antlr4-runtime</artifactId>
-			<version>4.5.3</version>
+			<version>4.5.1</version>
 		</dependency>
 		<dependency>
 			<groupId>junit</groupId>
@@ -47,22 +47,28 @@
 			<artifactId>commons-lang3</artifactId>
 			<version>3.4</version>
 		</dependency>
+		<!--
+		<dependency>
+			<groupId>nz.ac.waikato.cms.weka</groupId>
+			<artifactId>weka-stable</artifactId>
+			<version>3.6.6</version>
+		</dependency>
+		-->
 	</dependencies>
 
 	<build>
 		<sourceDirectory>src</sourceDirectory>
-		<testSourceDirectory>test</testSourceDirectory>
 		<plugins>
 			<plugin>
 				<groupId>org.antlr</groupId>
 				<artifactId>antlr4-maven-plugin</artifactId>
-				<version>4.5.3</version>
+				<version>4.5.1</version>
 				<executions>
 					<execution>
 						<configuration>
 							<sourceDirectory>grammars</sourceDirectory>
 							<options>
-								<contextSuperClass>org.antlr.v4.runtime.RuleContextWithAltNum</contextSuperClass>
+
 							</options>
 						</configuration>
 						<id>antlr</id>

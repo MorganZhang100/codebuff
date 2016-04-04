@@ -18,7 +18,6 @@ public class InputDocument {
 	public List<int[]> featureVectors;
 	public List<Integer> injectNewlines;
 	public List<Integer> injectWS;
-	public List<Integer> indent;
 	public List<Integer> alignWithPrevious;
 	public int allWhiteSpaceCount = 0;
 	public int incorrectWhiteSpaceCount = 0;
@@ -42,7 +41,10 @@ public class InputDocument {
 		if ( lines==null ) {
 			lines = Arrays.asList(content.split("\n"));
 		}
-		return lines.get(line-1);
+		if ( line>0 ) {
+			return lines.get(line-1);
+		}
+		return null;
 	}
 
 	public double getIncorrectWSRate() {

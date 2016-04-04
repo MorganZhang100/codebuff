@@ -14,9 +14,7 @@ public class BuffScope {
 	public JTabbedPane analysisTabbedPane;
 	public JPanel injectNLTab;
 	public JPanel alignTab;
-	public JTextArea indentConsole;
 	public JTextArea injectWSConsole;
-	public JPanel indentTab;
 	public JPanel injectWSTab;
 
 	public JTextArea getInjectNLConsole() {
@@ -103,27 +101,20 @@ public class BuffScope {
 		injectNLConsole.setEditable(false);
 		scrollPane3.setViewportView(injectNLConsole);
 		alignTab = new JPanel();
-		alignTab.setLayout(new com.intellij.uiDesigner.core.GridLayoutManager(1, 1, new Insets(0, 0, 0, 0), -1, -1));
+		alignTab.setLayout(new BorderLayout(0, 0));
 		analysisTabbedPane.addTab("Alignment", alignTab);
 		final JScrollPane scrollPane4 = new JScrollPane();
-		alignTab.add(scrollPane4, new com.intellij.uiDesigner.core.GridConstraints(0, 0, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_CENTER, com.intellij.uiDesigner.core.GridConstraints.FILL_BOTH, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_SHRINK|com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_WANT_GROW, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_SHRINK|com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
+		alignTab.add(scrollPane4, BorderLayout.CENTER);
 		alignConsole = new JTextArea();
 		scrollPane4.setViewportView(alignConsole);
-		indentTab = new JPanel();
-		indentTab.setLayout(new com.intellij.uiDesigner.core.GridLayoutManager(1, 1, new Insets(0, 0, 0, 0), -1, -1));
-		analysisTabbedPane.addTab("Indentation", indentTab);
-		final JScrollPane scrollPane5 = new JScrollPane();
-		indentTab.add(scrollPane5, new com.intellij.uiDesigner.core.GridConstraints(0, 0, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_CENTER, com.intellij.uiDesigner.core.GridConstraints.FILL_BOTH, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_SHRINK|com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_WANT_GROW, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_SHRINK|com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
-		indentConsole = new JTextArea();
-		scrollPane5.setViewportView(indentConsole);
 		injectWSTab = new JPanel();
-		injectWSTab.setLayout(new com.intellij.uiDesigner.core.GridLayoutManager(1, 1, new Insets(0, 0, 0, 0), -1, -1));
+		injectWSTab.setLayout(new BorderLayout(0, 0));
 		analysisTabbedPane.addTab("Inject whitespace", injectWSTab);
-		final JScrollPane scrollPane6 = new JScrollPane();
-		injectWSTab.add(scrollPane6, new com.intellij.uiDesigner.core.GridConstraints(0, 0, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_CENTER, com.intellij.uiDesigner.core.GridConstraints.FILL_BOTH, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_SHRINK|com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_WANT_GROW, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_SHRINK|com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
+		final JScrollPane scrollPane5 = new JScrollPane();
+		injectWSTab.add(scrollPane5, BorderLayout.CENTER);
 		injectWSConsole = new JTextArea();
 		injectWSConsole.setEditable(false);
-		scrollPane6.setViewportView(injectWSConsole);
+		scrollPane5.setViewportView(injectWSConsole);
 	}
 
 	/**

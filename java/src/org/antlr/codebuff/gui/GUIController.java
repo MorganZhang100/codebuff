@@ -16,7 +16,6 @@ import javax.swing.text.Highlighter.HighlightPainter;
 import java.awt.*;
 import java.util.List;
 
-import static javax.swing.JFrame.EXIT_ON_CLOSE;
 import static javax.swing.text.DefaultHighlighter.DefaultHighlightPainter;
 
 public class GUIController {
@@ -67,13 +66,11 @@ public class GUIController {
 		scope.injectNLConsole.setFont(docFont);
 		scope.alignConsole.putClientProperty(JEditorPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE);
 		scope.alignConsole.setFont(docFont);
-		scope.indentConsole.putClientProperty(JEditorPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE);
-		scope.indentConsole.setFont(docFont);
 		scope.injectWSConsole.putClientProperty(JEditorPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE);
 		scope.injectWSConsole.setFont(docFont);
 
 		JFrame frame = new JFrame("CodeBuff Scope");
-		frame.setDefaultCloseOperation(EXIT_ON_CLOSE);
+		frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 		frame.getContentPane().add(scope.$$$getRootComponent$$$(), BorderLayout.CENTER);
 
 		scope.getFormattedTextPane().addCaretListener(new HighlightTokenListener());
@@ -116,11 +113,9 @@ public class GUIController {
 				}
 				scope.injectNLConsole.setText(analysis!=null ? analysis.newline : "");
 				scope.alignConsole.setText(analysis!=null ? analysis.align : "");
-				scope.indentConsole.setText(analysis!=null ? analysis.indent : "");
 				scope.injectWSConsole.setText(analysis!=null ? analysis.ws : "");
 				scope.injectNLConsole.setCaretPosition(0);
 				scope.alignConsole.setCaretPosition(0);
-				scope.indentConsole.setCaretPosition(0);
 				scope.injectWSConsole.setCaretPosition(0);
 			}
 			catch (Exception ex) {
